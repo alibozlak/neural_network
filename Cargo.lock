@@ -3,13 +3,5 @@
 version = 4
 
 [[package]]
-name = "linear_and_sigmoid_functions"
-version = "0.1.0"
-source = "git+https://github.com/alibozlak/linear_and_sigmoid_functions?tag=v0.1.0#f2b6a71b1fef3b8d77f0c31989cbebb470bdb6cc"
-
-[[package]]
 name = "neural_network"
 version = "0.1.0"
-dependencies = [
- "linear_and_sigmoid_functions",
-]
