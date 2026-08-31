@@ -9,7 +9,7 @@ pub struct Unit {
 
 impl Unit {
     pub fn new(
-        activation_function_type: ActivationFunctionType,
+        activation_function_type: &ActivationFunctionType,
         weights: Vec<f64>,
         bias: f64,
     ) -> Self {
