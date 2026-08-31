@@ -18,7 +18,7 @@ impl NeuralNetwork {
         y: Vec<f64>,
         layer_request_infos: Vec<LayerRequestInfo>,
     ) -> Self {
-        let (layer_count, X_feature_size, sample_size) = Self::validate(&X, &y, &layer_request_infos);
+        let (layer_count, X_feature_size) = Self::validate(&X, &y, &layer_request_infos);
 
         let mut layers : Vec<Layer> = Vec::with_capacity(layer_count);
 
@@ -47,7 +47,7 @@ impl NeuralNetwork {
         X: &Vec<Vec<f64>>,
         y: &Vec<f64>,
         layer_request_infos: &Vec<LayerRequestInfo>
-    ) -> (usize, usize, usize) {
+    ) -> (usize, usize) {
         let layer_count = layer_request_infos.len();
         if layer_count == 0 {
             panic!("Network must has at least one layer!!");
@@ -70,7 +70,7 @@ impl NeuralNetwork {
             }
         }
 
-        (layer_count, X_feature_size, sample_size)
+        (layer_count, X_feature_size)
     }
 
 }

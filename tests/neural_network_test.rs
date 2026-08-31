@@ -28,12 +28,11 @@ fn layer_requests(unit_counts: &[usize]) -> Vec<LayerRequestInfo> {
 fn validate_returns_layer_count_feature_size_and_sample_size() {
     let (x, y) = samples();
 
-    let (layer_count, feature_size, sample_size) =
+    let (layer_count, feature_size) =
         NeuralNetwork::validate(&x, &y, &layer_requests(&[4, 2, 1]));
 
     assert_eq!(layer_count, 3);
     assert_eq!(feature_size, 3);
-    assert_eq!(sample_size, 3);
 }
 
 #[test]
@@ -41,10 +40,10 @@ fn validate_accepts_a_network_with_a_single_output_layer() {
     let x = vec![vec![1.0]];
     let y = vec![1.0];
 
-    let (layer_count, feature_size, sample_size) =
+    let (layer_count, feature_size) =
         NeuralNetwork::validate(&x, &y, &layer_requests(&[1]));
 
-    assert_eq!((layer_count, feature_size, sample_size), (1, 1, 1));
+    assert_eq!((layer_count, feature_size), (1, 1));
 }
 
 #[test]
