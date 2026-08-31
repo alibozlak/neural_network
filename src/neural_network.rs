@@ -4,19 +4,15 @@ use crate::unit::Unit;
 
 #[allow(non_snake_case)]
 pub struct NeuralNetwork {
-    X: Vec<Vec<f64>>,
-    y: Vec<f64>,
     pub layers : Vec<Layer>,
-
-    layer_count : usize,
 }
 
 #[allow(non_snake_case)]
 impl NeuralNetwork {
     pub fn new(
-        X: Vec<Vec<f64>>,
-        y: Vec<f64>,
-        layer_request_infos: Vec<LayerRequestInfo>,
+        X: &Vec<Vec<f64>>,
+        y: &Vec<f64>,
+        layer_request_infos: &Vec<LayerRequestInfo>,
     ) -> Self {
         let (layer_count, X_feature_size) = Self::validate(&X, &y, &layer_request_infos);
 
@@ -40,7 +36,34 @@ impl NeuralNetwork {
             layers.push(layer);
         }
 
-        Self { X, y, layers, layer_count }
+        Self { layers }
+    }
+
+    pub fn network_union_predict_function(&self, input_sample: &Vec<f64>) -> f64 {
+        let layer_1_weight_size: usize = self.layers[0].units[0].weights.len();
+
+        if layer_1_weight_size != input_sample.len() {
+            panic!("Input sample feature size must be {} count !! Yours = {}", layer_1_weight_size, input_sample.len());
+        }
+
+        let layer_count = self.layers.len();
+
+        let mut a_before: Vec<f64> = input_sample.clone();
+        for layer_index in 0..layer_count {
+            let unit_count = self.layers[layer_index].units.len();
+            let mut a_after: Vec<f64> = vec![0.; unit_count];
+
+            for u in 0..unit_count {
+                let activation_func = self.layers[layer_index].units[u].activation_function;
+                let weights = &self.layers[layer_index].units[u].weights;
+                let bias = self.layers[layer_index].units[u].bias;
+                let a_before2 = &a_before.clone();
+                a_after[u] = (activation_func)(a_before2, weights, bias);
+            }
+            a_before = a_after;
+        }
+
+        a_before[0]
     }
 
     pub fn validate(
