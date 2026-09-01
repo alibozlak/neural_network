@@ -65,7 +65,7 @@ impl SequentialModel {
         let mut summary: String = format!("Layer_Count: {}\n", self.layer_count);
         for layer_index in 0..self.layer_count {
             summary.push_str(&format!(
-                "Layer_{}_Unit_Count: {}\n", layer_index + 1, self.layers[layer_index].summary())
+                "Layer_{}: {}\n", layer_index + 1, self.layers[layer_index].summary())
             );
         }
 
