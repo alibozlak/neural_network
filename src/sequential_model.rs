@@ -32,6 +32,11 @@ impl SequentialModel {
         Self { layers, layer_count }
     }
 
+    pub fn generate_sequential_model_with_layers(layers: Vec<Layer>) -> Self {
+        let layer_count = layers.len();
+        Self { layers, layer_count }
+    }
+
     pub fn predict(&self, input: Array1<f64>) -> f64 {
         let feature_size = input.len();
         let first_layer_row_size = self.layers[0].get_matrix().nrows();
