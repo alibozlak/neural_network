@@ -1,4 +1,4 @@
-use ndarray::{Array1, Array2};
+use ndarray::{s, Array1, Array2};
 use crate::layer::Layer;
 use crate::layer_request_infos::LayerRequestInfo;
 
@@ -34,14 +34,13 @@ impl SequentialModel {
 
     pub fn predict(&self, input: Array1<f64>) -> f64 {
         let feature_size = input.len();
-        let first_layer_column_size = self.layers[0].get_matrix().ncols();
-        if feature_size + 1 != first_layer_column_size {
+        let first_layer_row_size = self.layers[0].get_matrix().nrows();
+        if feature_size + 1 != first_layer_row_size {
             panic!("Input array's feature count not correct!!");
         }
 
-        let mut a_previous_matrix: Array2<f64> = input.into_shape_with_order((1, feature_size + 1)).unwrap();
-        let last_column_index = a_previous_matrix.ncols() - 1;
-        a_previous_matrix.column_mut(last_column_index).fill(1.);
+        let mut a_previous_matrix: Array2<f64> = Array2::ones((1, feature_size+1));
+        a_previous_matrix.slice_mut(s![0, ..feature_size]).assign(&input);
         for layer_index in 0..self.layer_count {
             a_previous_matrix = Self::build_a_next(&self.layers[layer_index], a_previous_matrix);
         }
