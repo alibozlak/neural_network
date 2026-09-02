@@ -26,7 +26,7 @@ fn new_keeps_the_matrix_shape() {
 fn new_stores_the_given_activation() {
     let layer = Layer::new(Array2::zeros((2, 2)), Activation::Sigmoid);
 
-    assert!(layer.get_activation_function() == Activation::Sigmoid);
+    assert_eq!(layer.get_activation_function(), Activation::Sigmoid);
 }
 
 #[test]

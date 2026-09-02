@@ -5,7 +5,7 @@ use neural_network::layer_request_infos::LayerRequestInfo;
 fn new_stores_the_given_activation_and_unit_count() {
     let info = LayerRequestInfo::new(Activation::Sigmoid, 7);
 
-    assert!(info.activation == Activation::Sigmoid);
+    assert_eq!(info.activation, Activation::Sigmoid);
     assert_eq!(info.unit_count, 7);
 }
 

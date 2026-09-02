@@ -67,7 +67,7 @@ fn new_keeps_the_requested_activation_of_every_layer() {
     let model = SequentialModel::new(3, &layer_requests(&[3, 2, 1]));
 
     for layer in model.get_layers() {
-        assert!(layer.get_activation_function() == Activation::Sigmoid);
+        assert_eq!(layer.get_activation_function(), Activation::Sigmoid);
     }
 }
 

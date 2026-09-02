@@ -72,7 +72,7 @@ fn an_activation_is_copied_instead_of_being_moved() {
     let activation = Activation::Sigmoid;
     let copy = activation;
 
-    assert!(activation == copy);
+    assert_eq!(activation, copy);
     assert_close(activation.apply(1.0), copy.apply(1.0));
 }
 
@@ -92,16 +92,12 @@ fn from_str_parses_back_the_name_that_display_prints() {
 
     let parsed: Activation = printed.parse().expect("Display output must parse back");
 
-    assert!(parsed == Activation::Sigmoid);
+    assert_eq!(parsed, Activation::Sigmoid);
 }
 
 #[test]
 fn from_str_rejects_an_unknown_name_and_names_it_in_the_error() {
-    // `expect_err` would need `Activation: Debug`, which the enum does not derive yet.
-    let error = match "relu".parse::<Activation>() {
-        Ok(_) => panic!("relu must not parse into an activation"),
-        Err(message) => message,
-    };
+    let error = "relu".parse::<Activation>().expect_err("relu is not an activation");
 
     assert!(error.contains("relu"), "got: {error}");
 }
@@ -115,4 +111,9 @@ fn from_str_is_case_sensitive() {
 #[test]
 fn from_str_rejects_an_empty_name() {
     assert!("".parse::<Activation>().is_err());
+}
+
+#[test]
+fn debug_prints_the_variant_name_too() {
+    assert_eq!(format!("{:?}", Activation::Sigmoid), "Sigmoid");
 }
