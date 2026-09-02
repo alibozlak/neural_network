@@ -18,7 +18,7 @@ fn new_accepts_a_request_without_any_unit() {
 
 #[test]
 fn every_request_keeps_its_own_unit_count() {
-    let infos = vec![
+    let infos = [
         LayerRequestInfo::new(Activation::Sigmoid, 4),
         LayerRequestInfo::new(Activation::Sigmoid, 2),
         LayerRequestInfo::new(Activation::Sigmoid, 1),
