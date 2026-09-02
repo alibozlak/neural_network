@@ -1,12 +1,12 @@
-use crate::activation_function_type::ActivationFunctionType;
+use crate::activation::Activation;
 
 pub struct LayerRequestInfo {
-    pub activation_function_type: ActivationFunctionType,
+    pub activation: Activation,
     pub unit_count: usize,
 }
 
 impl LayerRequestInfo {
-    pub fn new(activation_function_type: ActivationFunctionType, unit_count: usize) -> Self {
-        Self { activation_function_type, unit_count }
+    pub fn new(activation: Activation, unit_count: usize) -> Self {
+        Self { activation, unit_count }
     }
 }

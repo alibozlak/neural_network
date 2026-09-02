@@ -1,5 +1,8 @@
 #![allow(dead_code)]
 
+use neural_network::activation::Activation;
+use neural_network::layer_request_infos::LayerRequestInfo;
+
 pub const EPSILON: f64 = 1e-12;
 
 /// Panics with a readable message when two floats are not close enough.
@@ -15,11 +18,10 @@ pub fn sigmoid(x: f64) -> f64 {
     1. / (1. + (-x).exp())
 }
 
-/// Reference implementation of the linear combination, used to check the crate's version.
-pub fn linear(input_array: &[f64], weights: &[f64], bias: f64) -> f64 {
-    let mut output = bias;
-    for i in 0..weights.len() {
-        output += input_array[i] * weights[i];
-    }
-    output
+/// Builds one sigmoid layer request per given unit count.
+pub fn layer_requests(unit_counts: &[usize]) -> Vec<LayerRequestInfo> {
+    unit_counts
+        .iter()
+        .map(|&unit_count| LayerRequestInfo::new(Activation::Sigmoid, unit_count))
+        .collect()
 }

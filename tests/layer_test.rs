@@ -1,47 +1,75 @@
-use neural_network::activation_function_type::ActivationFunctionType;
+use ndarray::{array, Array2};
+use neural_network::activation::Activation;
 use neural_network::layer::Layer;
-use neural_network::unit::Unit;
 
 mod common;
 use common::assert_close;
 
-fn unit(weights: Vec<f64>, bias: f64) -> Unit {
-    Unit::new(&ActivationFunctionType::Linear, weights, bias)
+#[test]
+fn new_stores_the_given_matrix_without_changing_it() {
+    let matrix: Array2<f64> = array![[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+
+    let layer = Layer::new(matrix.clone(), Activation::Sigmoid);
+
+    assert_eq!(layer.get_matrix(), &matrix);
 }
 
 #[test]
-fn new_stores_every_given_unit_in_order() {
-    let layer = Layer::new(vec![
-        unit(vec![1.0], 0.1),
-        unit(vec![2.0], 0.2),
-        unit(vec![3.0], 0.3),
-    ]);
+fn new_keeps_the_matrix_shape() {
+    let layer = Layer::new(Array2::zeros((5, 3)), Activation::Sigmoid);
 
-    assert_eq!(layer.get_units().len(), 3);
-    assert_eq!(layer.get_units()[0].get_weights(), &vec![1.0]);
-    assert_eq!(layer.get_units()[1].get_weights(), &vec![2.0]);
-    assert_eq!(layer.get_units()[2].get_weights(), &vec![3.0]);
-    assert_close(layer.get_units()[2].get_bias(), 0.3);
+    assert_eq!(layer.get_matrix().nrows(), 5);
+    assert_eq!(layer.get_matrix().ncols(), 3);
 }
 
 #[test]
-fn new_accepts_an_empty_unit_list() {
-    let layer = Layer::new(vec![]);
+fn new_stores_the_given_activation() {
+    let layer = Layer::new(Array2::zeros((2, 2)), Activation::Sigmoid);
 
-    assert!(layer.get_units().is_empty());
+    assert_eq!(layer.get_activation_function(), Activation::Sigmoid);
 }
 
 #[test]
-fn units_of_a_layer_can_be_evaluated_one_by_one() {
-    let layer = Layer::new(vec![unit(vec![1.0, 1.0], 0.0), unit(vec![2.0, 0.0], 1.0)]);
-    let input_array = [3.0, 4.0];
+fn the_stored_activation_can_be_applied_to_a_whole_matrix() {
+    let layer = Layer::new(array![[0.0, 0.0], [0.0, 0.0]], Activation::Sigmoid);
 
-    let outputs: Vec<f64> = layer
-        .get_units()
-        .iter()
-        .map(|u| (u.get_activation_function())(&input_array, &u.get_weights(), u.get_bias()))
-        .collect();
+    let activated = layer
+        .get_matrix()
+        .mapv(|z| layer.get_activation_function().apply(z));
 
-    assert_close(outputs[0], 7.0);
-    assert_close(outputs[1], 7.0);
+    for output in activated.iter() {
+        assert_close(*output, 0.5);
+    }
+}
+
+#[test]
+fn get_matrix_gives_access_to_single_weights_by_row_and_column() {
+    let layer = Layer::new(array![[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]], Activation::Sigmoid);
+
+    assert_close(layer.get_matrix()[[0, 0]], 1.0);
+    assert_close(layer.get_matrix()[[2, 1]], 6.0);
+}
+
+#[test]
+fn summary_reports_the_raw_matrix_shape_and_the_activation() {
+    let summary = Layer::new(Array2::zeros((3, 4)), Activation::Sigmoid).summary();
+
+    assert_eq!(summary, "Matrix shape = 3x4, activation_func = Sigmoid");
+}
+
+#[test]
+fn summary_prints_the_row_count_before_the_column_count() {
+    let summary = Layer::new(Array2::zeros((7, 2)), Activation::Sigmoid).summary();
+
+    assert!(summary.contains("7x2"), "got: {summary}");
+}
+
+/// The shape is reported raw, bias row and bias column included. A layer of 2 incoming
+/// features and 3 units is a `(3, 4)` matrix and prints as `3x4`, so a reader has to know
+/// the convention to get back to "2 features, 3 units".
+#[test]
+fn summary_does_not_subtract_the_bias_row_and_column() {
+    let layer = Layer::new(Array2::zeros((2 + 1, 3 + 1)), Activation::Sigmoid);
+
+    assert!(layer.summary().contains("3x4"), "got: {}", layer.summary());
 }
