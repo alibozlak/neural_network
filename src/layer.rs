@@ -39,7 +39,7 @@ impl Layer {
             "Matrix shape = {}x{}, activation_func = {}",
             self.matrix.shape()[0],
             self.matrix.shape()[1],
-            self.activation.to_string()
+            self.activation
         )
     }
 
