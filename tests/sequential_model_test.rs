@@ -1,8 +1,9 @@
+use ndarray::{array, Array2};
 use neural_network::activation::Activation;
 use neural_network::sequential_model::SequentialModel;
 
 mod common;
-use common::layer_requests;
+use common::{layer_requests, model_of};
 
 #[test]
 fn new_creates_one_layer_per_request() {
@@ -141,3 +142,61 @@ fn summary_of_a_model_without_layers_only_reports_the_layer_count() {
 
     assert_eq!(summary, "Layer_Count: 0\n");
 }
+
+#[test]
+fn generate_sequential_model_with_layers_keeps_the_layers_in_the_given_order() {
+    let model = model_of(vec![Array2::zeros((3, 5)), Array2::zeros((5, 2))], 2);
+
+    assert_eq!(model.get_layers().len(), 2);
+    assert_eq!(model.get_layers()[0].get_matrix().dim(), (3, 5));
+    assert_eq!(model.get_layers()[1].get_matrix().dim(), (5, 2));
+}
+
+#[test]
+fn generate_sequential_model_with_layers_counts_the_layers_for_the_summary() {
+    let model = model_of(
+        vec![
+            Array2::zeros((2, 2)),
+            Array2::zeros((2, 2)),
+            Array2::zeros((2, 2)),
+        ],
+        1,
+    );
+
+    assert!(
+        model.summary().starts_with("Layer_Count: 3\n"),
+        "got: {}",
+        model.summary()
+    );
+}
+
+#[test]
+fn generate_sequential_model_with_layers_keeps_the_weights_it_is_given() {
+    let matrix = array![[1.5, -2.0], [0.25, 3.0]];
+
+    let model = model_of(vec![matrix.clone()], 1);
+
+    assert_eq!(model.get_layers()[0].get_matrix(), &matrix);
+}
+
+#[test]
+fn generate_sequential_model_with_layers_keeps_the_activation_of_every_layer() {
+    let model = model_of(vec![Array2::zeros((2, 3)), Array2::zeros((3, 2))], 1);
+
+    for layer in model.get_layers() {
+        assert_eq!(layer.get_activation_function(), Activation::Sigmoid);
+    }
+}
+
+#[test]
+fn both_constructors_agree_on_the_summary_of_the_same_shapes() {
+    let built = SequentialModel::new(2, &layer_requests(&[3, 1]));
+    let matrices: Vec<Array2<f64>> = built
+        .get_layers()
+        .iter()
+        .map(|layer| layer.get_matrix().clone())
+        .collect();
+
+    assert_eq!(model_of(matrices, 2).summary(), built.summary());
+}
+
