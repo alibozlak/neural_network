@@ -43,7 +43,8 @@ impl FromStr for Activation {
     fn from_str(text: &str) -> Result<Self, Self::Err> {
         match text {
             "Sigmoid" => Ok(Self::Sigmoid),
-            // "Linear" => Ok(Self::Linear),
+            "Linear" => Ok(Self::Linear),
+            "ReLU" => Ok(Self::ReLU),
             other => Err(format!("unknown activation: {other}")),
         }
     }
