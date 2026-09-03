@@ -40,6 +40,7 @@ impl SequentialModel {
         Self { layers, layer_count }
     }
 
+    ///Last layer critical layer for cost !!
     pub fn cost(&self, a0_matrix: &Array2<f64>, outputs: &Array1<f64>) -> f64 {
         let result: f64 ;
 
@@ -51,7 +52,12 @@ impl SequentialModel {
                 )
             },
 
-            // Other activations here
+            Activation::Linear => {
+                result = Self::get_cost_for_linear_activation(
+                    &self.predict_array_for_learning(a0_matrix),
+                    outputs,
+                )
+            },
         }
 
         result
@@ -66,16 +72,31 @@ impl SequentialModel {
         sum_loss / (array_length as f64)
     }
 
+    ///My Cost Function definition : Divided by sample size, Not (sample_size * 2) !!
+    /// Source :
+    /// https://github.com/alibozlak/multivariable_linear_regression/blob/master/math/001_dJ_daj_partial_derivative.pdf
+    fn get_cost_for_linear_activation(predicted_array: &Array1<f64>, real_outputs: &Array1<f64>) -> f64 {
+        let array_length = predicted_array.len();
+        let mut cost: f64 = 0.;
+        for i in 0..array_length {
+            cost += (predicted_array[i] - real_outputs[i]).powi(2);
+        }
+
+        cost / array_length as f64
+    }
+
     pub fn loss(&self, input_sample: &Array1<f64>, output: f64) -> f64 {
         let result : f64;
 
+        let predict = self.predict(input_sample);
         match self.layers[self.layer_count - 1].get_activation_function() {
             Activation::Sigmoid => {
-                let predict = self.predict(input_sample);
                 result = Self::loss_for_sigmoid(predict, output);
             },
 
-            // Other activations
+            Activation::Linear => {
+                result = (predict - output).abs();
+            },
         }
 
         result
