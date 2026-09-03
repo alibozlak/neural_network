@@ -90,8 +90,10 @@ impl SequentialModel {
             &self.layers[0], a0_matrix.ncols()
         );
 
-        let mut a_previous_matrix: Array2<f64> = Array2::ones((1, feature_size+1));
-        a_previous_matrix.slice_mut(s![0, ..feature_size]).assign(&a0_matrix);
+        let mut a_previous_matrix: Array2<f64> = Array2::ones(
+            (a0_matrix.nrows(), feature_size+1)
+        );
+        a_previous_matrix.slice_mut(s![.., ..feature_size]).assign(a0_matrix);
         for layer_index in 0..self.layer_count {
             a_previous_matrix = Self::build_a_next(&self.layers[layer_index], a_previous_matrix);
         }
@@ -133,10 +135,9 @@ impl SequentialModel {
 
     fn validate_layers(layers: &Vec<Layer>, sample_feature_size: usize,) {
         let layer_count = layers.len();
-        let a0_column_size =
-            Self::first_layer_row_size_and_a0_feature_size_validate(&layers[0], sample_feature_size) + 1;
+        Self::first_layer_row_size_and_a0_feature_size_validate(&layers[0], sample_feature_size);
 
-        let mut layer_previous_column_size: usize = a0_column_size;
+        let mut layer_previous_column_size: usize = layers[0].get_matrix().ncols();
         for layer_index in 1..layer_count {
             if layers[layer_index].get_matrix().nrows() != layer_previous_column_size {
                 panic!("Layer_{} row size and its previous column size mismatch !!", layer_index + 1);
