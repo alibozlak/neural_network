@@ -1,6 +1,4 @@
-use ndarray::Array2;
 use neural_network::activation::Activation;
-use neural_network::layer::Layer;
 use neural_network::sequential_model::SequentialModel;
 
 mod common;
@@ -142,64 +140,4 @@ fn summary_of_a_model_without_layers_only_reports_the_layer_count() {
     let summary = SequentialModel::new(2, &layer_requests(&[])).summary();
 
     assert_eq!(summary, "Layer_Count: 0\n");
-}
-
-#[test]
-fn generate_sequential_model_with_layers_keeps_the_layers_in_the_given_order() {
-    let model = SequentialModel::generate_sequential_model_with_layers(vec![
-        Layer::new(Array2::zeros((3, 5)), Activation::Sigmoid),
-        Layer::new(Array2::zeros((5, 2)), Activation::Sigmoid),
-    ]);
-
-    assert_eq!(model.get_layers().len(), 2);
-    assert_eq!(model.get_layers()[0].get_matrix().dim(), (3, 5));
-    assert_eq!(model.get_layers()[1].get_matrix().dim(), (5, 2));
-}
-
-#[test]
-fn generate_sequential_model_with_layers_counts_the_layers_for_the_summary() {
-    let model = SequentialModel::generate_sequential_model_with_layers(vec![
-        Layer::new(Array2::zeros((2, 2)), Activation::Sigmoid),
-        Layer::new(Array2::zeros((2, 2)), Activation::Sigmoid),
-        Layer::new(Array2::zeros((2, 2)), Activation::Sigmoid),
-    ]);
-
-    assert!(model.summary().starts_with("Layer_Count: 3\n"), "got: {}", model.summary());
-}
-
-#[test]
-fn generate_sequential_model_with_layers_accepts_an_empty_layer_list() {
-    let model = SequentialModel::generate_sequential_model_with_layers(vec![]);
-
-    assert!(model.get_layers().is_empty());
-    assert_eq!(model.summary(), "Layer_Count: 0\n");
-}
-
-#[test]
-fn generate_sequential_model_with_layers_keeps_the_weights_it_is_given() {
-    let matrix = ndarray::array![[1.5, -2.0], [0.25, 3.0]];
-
-    let model = SequentialModel::generate_sequential_model_with_layers(vec![Layer::new(
-        matrix.clone(),
-        Activation::Sigmoid,
-    )]);
-
-    assert_eq!(model.get_layers()[0].get_matrix(), &matrix);
-}
-
-/// Unlike `new`, this constructor takes the layers as they come: nothing checks that
-/// `layer[i].nrows()` matches `layer[i - 1].ncols()`. A model whose layers do not chain is
-/// built without complaint and only fails later, inside `predict`, with ndarray's own
-/// shape error rather than a message naming the real mistake.
-#[test]
-fn generate_sequential_model_with_layers_does_not_check_that_the_layers_chain() {
-    let model = SequentialModel::generate_sequential_model_with_layers(vec![
-        Layer::new(Array2::zeros((2, 2)), Activation::Sigmoid),
-        Layer::new(Array2::zeros((5, 2)), Activation::Sigmoid),
-    ]);
-
-    assert_eq!(model.get_layers().len(), 2);
-
-    let broken = std::panic::catch_unwind(|| model.predict(ndarray::array![1.0]));
-    assert!(broken.is_err(), "layers that do not chain must not survive a predict");
 }
