@@ -44,19 +44,14 @@ impl SequentialModel {
     pub fn cost(&self, a0_matrix: &Array2<f64>, outputs: &Array1<f64>) -> f64 {
         let result: f64 ;
 
+        let predict_array: Array1<f64> = self.predict_array_for_learning(a0_matrix);
         match self.layers[self.layer_count - 1].get_activation_function() {
             Activation::Sigmoid => {
-                result = Self::get_mean_loss(
-                    &self.predict_array_for_learning(a0_matrix),
-                    outputs,
-                )
+                result = Self::get_mean_loss(&predict_array, outputs,)
             },
 
             Activation::Linear => {
-                result = Self::get_cost_for_linear_activation(
-                    &self.predict_array_for_learning(a0_matrix),
-                    outputs,
-                )
+                result = Self::get_cost_for_linear_activation(&predict_array, outputs,)
             },
         }
 
