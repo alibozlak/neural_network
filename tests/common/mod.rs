@@ -39,9 +39,21 @@ pub fn layer_requests(unit_counts: &[usize]) -> Vec<LayerRequestInfo> {
 /// `new` fills every weight with zero, which hides any arithmetic mistake behind
 /// `sigmoid(0) = 0.5`; the tests that check real numbers need layers they choose themselves.
 pub fn model_of(matrices: Vec<Array2<f64>>, sample_feature_size: usize) -> SequentialModel {
+    model_of_activation(matrices, sample_feature_size, Activation::Sigmoid)
+}
+
+/// The same thing as `model_of`, for an activation the caller picks.
+///
+/// `cost` and `loss` read the activation of the *output* layer to choose their formula, so
+/// a test of anything but the cross entropy needs a model that is not sigmoid.
+pub fn model_of_activation(
+    matrices: Vec<Array2<f64>>,
+    sample_feature_size: usize,
+    activation: Activation,
+) -> SequentialModel {
     let layers = matrices
         .into_iter()
-        .map(|matrix| Layer::new(matrix, Activation::Sigmoid))
+        .map(|matrix| Layer::new(matrix, activation))
         .collect();
 
     SequentialModel::generate_sequential_model_with_layers(layers, sample_feature_size)
