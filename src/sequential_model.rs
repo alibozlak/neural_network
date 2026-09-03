@@ -1,4 +1,5 @@
 use ndarray::{s, Array1, Array2};
+use crate::activation::Activation;
 use crate::layer::Layer;
 use crate::layer_request_infos::LayerRequestInfo;
 
@@ -32,25 +33,79 @@ impl SequentialModel {
         Self { layers, layer_count }
     }
 
-    pub fn generate_sequential_model_with_layers(layers: Vec<Layer>) -> Self {
+    pub fn generate_sequential_model_with_layers(layers: Vec<Layer>, sample_feature_size: usize,) -> Self {
+        Self::validate_layers(&layers, sample_feature_size);
+
         let layer_count = layers.len();
         Self { layers, layer_count }
     }
 
-    pub fn predict(&self, input: Array1<f64>) -> f64 {
-        let feature_size = input.len();
-        let first_layer_row_size = self.layers[0].get_matrix().nrows();
-        if feature_size + 1 != first_layer_row_size {
-            panic!("Input array's feature count not correct!!");
+    pub fn cost(&self, a0_matrix: &Array2<f64>, outputs: &Array1<f64>) -> f64 {
+        let result: f64 ;
+
+        match self.layers[self.layer_count - 1].get_activation_function() {
+            Activation::Sigmoid => {
+                result = Self::get_mean_loss(
+                    &self.predict_array_for_learning(a0_matrix),
+                    outputs,
+                )
+            },
+
+            // Other activations here
         }
 
-        let mut a_previous_matrix: Array2<f64> = Array2::ones((1, feature_size+1));
-        a_previous_matrix.slice_mut(s![0, ..feature_size]).assign(&input);
+        result
+    }
+
+    fn get_mean_loss(predicted_array: &Array1<f64>, real_outputs: &Array1<f64>) -> f64 {
+        let array_length = predicted_array.len();
+        let mut sum_loss: f64 = 0.;
+        for i in 0..array_length {
+            sum_loss += Self::loss_for_sigmoid(predicted_array[i], real_outputs[i])
+        }
+        sum_loss / (array_length as f64)
+    }
+
+    pub fn loss(&self, input_sample: &Array1<f64>, output: f64) -> f64 {
+        let result : f64;
+
+        match self.layers[self.layer_count - 1].get_activation_function() {
+            Activation::Sigmoid => {
+                let predict = self.predict(input_sample);
+                result = Self::loss_for_sigmoid(predict, output);
+            },
+
+            // Other activations
+        }
+
+        result
+    }
+
+    fn loss_for_sigmoid(predict: f64, real_output: f64) -> f64 {
+        (real_output - 1.) * (1. - predict).ln() - real_output * predict.ln()
+    }
+
+    fn predict_array_for_learning(&self, a0_matrix: &Array2<f64>) -> Array1<f64> {
+        let feature_size = Self::first_layer_row_size_and_a0_feature_size_validate(
+            &self.layers[0], a0_matrix.ncols()
+        );
+
+        let mut a_previous_matrix: Array2<f64> = Array2::ones(
+            (a0_matrix.nrows(), feature_size+1)
+        );
+        a_previous_matrix.slice_mut(s![.., ..feature_size]).assign(a0_matrix);
         for layer_index in 0..self.layer_count {
             a_previous_matrix = Self::build_a_next(&self.layers[layer_index], a_previous_matrix);
         }
 
-        a_previous_matrix[[0, 0]]
+        a_previous_matrix.column(0).to_owned()
+    }
+
+    pub fn predict(&self, input: &Array1<f64>) -> f64 {
+        let mut input_matrix: Array2<f64> = Array2::zeros((1, input.len()));
+        input_matrix.row_mut(0).assign(input);
+
+        self.predict_array_for_learning(&input_matrix)[0]
     }
 
     fn build_a_next(layer: &Layer, a_previous: Array2<f64>) -> Array2<f64> {
@@ -77,6 +132,31 @@ impl SequentialModel {
     pub fn get_layers(&self) -> &Vec<Layer> {
         &self.layers
     }
+
+    fn validate_layers(layers: &Vec<Layer>, sample_feature_size: usize,) {
+        let layer_count = layers.len();
+        Self::first_layer_row_size_and_a0_feature_size_validate(&layers[0], sample_feature_size);
+
+        let mut layer_previous_column_size: usize = layers[0].get_matrix().ncols();
+        for layer_index in 1..layer_count {
+            if layers[layer_index].get_matrix().nrows() != layer_previous_column_size {
+                panic!("Layer_{} row size and its previous column size mismatch !!", layer_index + 1);
+            }
+
+            layer_previous_column_size = layers[layer_index].get_matrix().ncols();
+        }
+    }
+
+    fn first_layer_row_size_and_a0_feature_size_validate(
+        layer_first: &Layer, a0_feature_count: usize
+    ) -> usize {
+        if layer_first.get_matrix().nrows() != a0_feature_count + 1 {
+            panic!("a0_column_size and first layer row count mismatch !!");
+        }
+
+        a0_feature_count
+    }
+
 
 
 
