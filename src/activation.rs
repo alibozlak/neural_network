@@ -5,6 +5,7 @@ use std::str::FromStr;
 pub enum Activation {
     Sigmoid,
     Linear,
+    ReLU,
 }
 
 impl Activation {
@@ -15,6 +16,8 @@ impl Activation {
             result = 1. / (1. + (-z).exp());
         } else if self == Self::Linear {
             result = z;
+        } else if self == Self::ReLU {
+            result = f64::max(z, 0.);
         }
 
         result
@@ -29,6 +32,7 @@ impl fmt::Display for Activation {
         let name = match self {
             Self::Sigmoid => "Sigmoid",
             Self::Linear => "Linear",
+            Self::ReLU => "ReLU",
         };
         write!(f, "{name}")
     }

@@ -53,6 +53,11 @@ impl SequentialModel {
             Activation::Linear => {
                 result = Self::get_cost_for_linear_activation(&predict_array, outputs,)
             },
+
+            //My predict :
+            Activation::ReLU => {
+                result = Self::get_cost_for_linear_activation(&predict_array, outputs,)
+            },
         }
 
         result
@@ -91,6 +96,10 @@ impl SequentialModel {
 
             Activation::Linear => {
                 result = (predict - output).abs();
+            },
+
+            Activation::ReLU => {
+                result = (predict + output).abs();
             },
         }
 
