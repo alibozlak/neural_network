@@ -4,7 +4,7 @@ use std::str::FromStr;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Activation {
     Sigmoid,
-    // Linear,
+    Linear,
 }
 
 impl Activation {
@@ -13,6 +13,8 @@ impl Activation {
 
         if self == Self::Sigmoid {
             result = 1. / (1. + (-z).exp());
+        } else if self == Self::Linear {
+            result = z;
         }
 
         result
@@ -26,7 +28,7 @@ impl fmt::Display for Activation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let name = match self {
             Self::Sigmoid => "Sigmoid",
-            // Self::Linear => "Linear",
+            Self::Linear => "Linear",
         };
         write!(f, "{name}")
     }
