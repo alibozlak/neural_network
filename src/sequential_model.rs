@@ -50,7 +50,7 @@ impl SequentialModel {
                 result = Self::get_mean_loss(&predict_array, outputs,)
             },
 
-            Activation::Linear => {
+            Activation::Linear | Activation::ReLU => {
                 result = Self::get_cost_for_linear_activation(&predict_array, outputs,)
             },
         }
@@ -89,8 +89,8 @@ impl SequentialModel {
                 result = Self::loss_for_sigmoid(predict, output);
             },
 
-            Activation::Linear => {
-                result = (predict - output).abs();
+            Activation::Linear | Activation::ReLU => {
+                result = (predict - output).powi(2);
             },
         }
 
